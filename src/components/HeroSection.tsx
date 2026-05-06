@@ -2,7 +2,12 @@
 import React from "react";
 import { motion } from "motion/react"
 import { Bike, Bus, Car, Truck } from "lucide-react";
-function HeroSection({onAuthRequired}:{onAuthRequired:()=>void}) {
+import { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+function HeroSection({ onAuthRequired }: { onAuthRequired: () => void }) {
+    const { userData } = useSelector((state: RootState) => state.user)
+    const router = useRouter()
     return (
         <div className='relative min-h-screen w-full overflow-hidden'>
             <div className='absolute inset-0 bg-cover bg-center' style={{ backgroundImage: "url('/bg.png')" }} />
@@ -19,7 +24,7 @@ function HeroSection({onAuthRequired}:{onAuthRequired:()=>void}) {
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6}}
+                    transition={{ delay: 0.6 }}
                     className="mt-4 max-w-xl text-gray-300"
                 >
                     From Daily Rides to Heavy Transport - All in One Platform.
@@ -30,17 +35,17 @@ function HeroSection({onAuthRequired}:{onAuthRequired:()=>void}) {
                     transition={{ duration: 0.3 }}
                     className="mt-8 flex gap-8 text-gray-300"
                 >
-                    <Bike size={30}/>
-                    <Car size={30}/>
-                    <Bus size={30}/>
-                    <Truck size={30}/>
+                    <Bike size={30} />
+                    <Car size={30} />
+                    <Bus size={30} />
+                    <Truck size={30} />
                 </motion.div>
 
                 <motion.button
-                    whileHover={{scale:1.05}}
-                    whileTap={{scale:0.95}}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     className="mt-12 px-10 py-4 bg-white text-black rounded-full font-semibold shadow-xl"
-                    onClick={onAuthRequired}
+                    onClick={() => { !userData ? onAuthRequired() : router.push("/user/book") }}
                 >
                     Book Now
                 </motion.button>
