@@ -7,7 +7,7 @@ type vechicleType =
     "truck" |
     "auto";
 
-interface IVehicle {
+export interface IVehicle {
     owner: mongoose.Types.ObjectId,
     type: vechicleType,
     vechicleModel: string,

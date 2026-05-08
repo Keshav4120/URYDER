@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
         if (user.partnerOnboardingStep < 2) {
             user.partnerOnboardingStep = 2
         }
+        user.partnerStatus = "pending"
         await user.save()
         return Response.json(partnerDocs, { status: 200 })
     } catch (error: any) {

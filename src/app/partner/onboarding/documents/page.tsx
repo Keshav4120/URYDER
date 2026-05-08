@@ -4,6 +4,10 @@ import { motion } from "motion/react"
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, FileCheck, Loader, UploadCloud } from 'lucide-react'
 import axios from 'axios'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState, AppDispatch } from '@/redux/store'
+import { setUserData } from '@/redux/userSlice'
+import { useEffect } from 'react'
 
 type docsType = "aadhar" | "licence" | "rc"
 
@@ -14,6 +18,15 @@ function page() {
         licence: null,
         rc: null
     })
+    const { userData } = useSelector((state: RootState) => state.user)
+    const dispatch = useDispatch<AppDispatch>()
+
+    useEffect(() => {
+        if (userData && userData.partnerOnboardingStep < 1) {
+            router.push('/partner/onboarding/vehicle')
+        }
+    }, [userData, router])
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const handleDocs = async () => {
@@ -32,7 +45,12 @@ function page() {
             fromData.append("licence", docs.licence)
             fromData.append("rc", docs.rc)
             const { data } = await axios.post("/api/partner/onboarding/documents", fromData)
+            
+            const userRes = await axios.get('/api/user/me')
+            dispatch(setUserData(userRes.data))
+            
             setLoading(false)
+            router.push('/partner/onboarding/bank')
         } catch (error: any) {
             setError(error?.response?.data?.message ?? "Something went wrong")
             console.log(error)

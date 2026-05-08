@@ -29,7 +29,7 @@ const PartnerDashboard = () => {
     const { userData } = useSelector((state: RootState) => state.user)
     useEffect(() => {
         if (userData) {
-            setActiveStep(userData.partnerOnboardingStep + 1)
+            setActiveStep(userData.partnerOnboardingStep)
         }
     }, [userData])
 

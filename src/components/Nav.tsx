@@ -32,11 +32,11 @@ function Nav() {
                 initial={{ y: -60, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 className={`fixed top-3 left-1/2 -translate-x-1/2
-                    w-[94%] md:w-[86%]
+                    w-[94%] md:w-[80%]
                     z-50 rounded-full bg-[#0f1616] text-white
                     shadow-[0_15px_50px_rgba(0,0,0,0.7)] py-3`}
             >
-                <div className='max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between'>
+                <div className='w-full px-6 md:px-14 flex items-center justify-between'>
                     <Link href={"/"}><Image src={"/logo.png"} alt='logo' width={44} height={44} priority /></Link>
                     <div className="hidden md:flex item-center gap-10">
                         {Nav_Items.map((i, index) => {

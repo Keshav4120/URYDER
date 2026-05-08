@@ -4,6 +4,9 @@ import { motion } from "motion/react"
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, BadgeCheck, CheckCircle, CreditCard, FileCheck, Landmark, Loader, Phone, UploadCloud } from 'lucide-react'
 import axios from 'axios'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState, AppDispatch } from '@/redux/store'
+import { setUserData } from '@/redux/userSlice'
 const IFSC_REGEX = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 function page() {
     const router = useRouter()
@@ -15,7 +18,19 @@ function page() {
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
+    
+    const { userData } = useSelector((state: RootState) => state.user)
+    const dispatch = useDispatch<AppDispatch>()
 
+    useEffect(() => {
+        if (userData) {
+            if (userData.partnerOnboardingStep < 1) {
+                router.push('/partner/onboarding/vehicle')
+            } else if (userData.partnerOnboardingStep < 2) {
+                router.push('/partner/onboarding/documents')
+            }
+        }
+    }, [userData, router])
 
     const sanitizedIFSC = ifsc.trim().toUpperCase()
 
@@ -42,8 +57,12 @@ function page() {
                 upiId,
                 mobileNumber,
             })
-            console.log(data)
+            
+            const userRes = await axios.get('/api/user/me')
+            dispatch(setUserData(userRes.data))
+            
             setLoading(false)
+            router.push('/')
         } catch (error: any) {
             setError(error.response.data.message ?? "Internal Server Error")
             setLoading(false)

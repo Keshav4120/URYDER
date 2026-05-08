@@ -4,6 +4,10 @@ import { motion } from "motion/react"
 import { ArrowLeft, Bike, Car, Truck, Package, CircleDashed, Loader } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { useDispatch } from 'react-redux'
+import { setUserData } from '@/redux/userSlice'
+import { AppDispatch } from '@/redux/store'
+
 const Vechicle = [
     { id: "bike", label: "Bike", icon: Bike, desc: "2 wheeler" },
     { id: "auto", label: "Auto", icon: Car, desc: "3 wheeler" },
@@ -18,15 +22,18 @@ function page() {
     const [vehicleModel, setVehicleModel] = useState("")
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
-
-
+    const dispatch = useDispatch<AppDispatch>()
     const handleVehicle = async () => {
         setError("")
         try {
             setLoading(true)
             const { data } = await axios.post('/api/partner/onboarding/vehicle', { type: vehicleType, number: vehicleNumber, model: vehicleModel })
+            // Fetch updated user to get new step
+            const userRes = await axios.get('/api/user/me')
+            dispatch(setUserData(userRes.data))
+            
             setLoading(false)
-            console.log(data)
+            router.push('/partner/onboarding/documents')
         } catch (error: any) {
             setError(error?.response?.data?.message || "Something Went Wrong")
             setLoading(false)
