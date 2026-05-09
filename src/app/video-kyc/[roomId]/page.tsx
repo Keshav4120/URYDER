@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react'
-import { ZegoUIKitPrebuilt } from '@zegoCloud/zego-uikit-prebuilt';
+import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/redux/store';
 import Link from 'next/link';
