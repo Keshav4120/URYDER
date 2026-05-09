@@ -17,7 +17,6 @@
 </head>
 <body class="bg-[#0a0a0a] text-gray-300 min-h-screen py-20 px-6">
     <div class="max-w-4xl mx-auto border border-white/10 bg-[#111] rounded-[40px] p-8 md:p-16 shadow-2xl">
-        <!-- Header -->
         <header class="text-center mb-16">
             <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter mb-6 uppercase">
                 🚀 URYDER
