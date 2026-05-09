@@ -56,9 +56,9 @@ function Nav() {
 
                             const active = href === pathName;
                             return (
-                                <Link 
-                                    key={index} 
-                                    href={href} 
+                                <Link
+                                    key={index}
+                                    href={href}
                                     className={`text-sm font-bold tracking-tight transition-all duration-300
                                         ${active ? "text-white scale-110" : "text-gray-400 hover:text-white hover:scale-105"}`}
                                 >
@@ -190,9 +190,9 @@ function Nav() {
                                     }
                                     const active = href === pathName;
                                     return (
-                                        <Link 
-                                            key={index} 
-                                            href={href} 
+                                        <Link
+                                            key={index}
+                                            href={href}
                                             onClick={() => setMenuOpen(false)}
                                             className={`px-6 py-5 text-sm font-bold tracking-widest uppercase transition-colors
                                                 ${active ? "text-white bg-white/5" : "text-gray-400 hover:text-white"}`}

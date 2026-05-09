@@ -62,11 +62,18 @@ function AuthModel({ open, onClose }: propType) {
             email, password, redirect: false
         })
         setLoading(false)
-        console.log(res)
+        if (res?.ok) {
+            onClose()
+        } else {
+            setError(res?.error ?? "Invalid credentials")
+        }
     }
 
     const handleGoogleLogin = async () => {
-        await signIn("google")
+        const res = await signIn("google", { redirect: false })
+        if (res?.ok) {
+            onClose()
+        }
     }
     const handleChangeOtp = (index: number, value: string) => {
         if (!/^[0-9]?$/.test(value)) return
