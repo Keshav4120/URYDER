@@ -3,7 +3,7 @@ import connectDb from "@/lib/db"
 import Vehicle from "@/models/vehicle.model"
 import { NextRequest, NextResponse } from "next/server"
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
 
         const session = await auth()

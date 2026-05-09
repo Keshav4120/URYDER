@@ -4,7 +4,7 @@ import { RootState } from '@/redux/store';
 import { useSelector, useDispatch } from 'react-redux';
 import { setUserData } from '@/redux/userSlice';
 import { motion } from 'motion/react'
-import { Check, CheckCheck, Clock, Clock1, Lock, Video } from 'lucide-react'
+import { Bell, Check, CheckCheck, Clock, Clock1, Lock, Video } from 'lucide-react'
 import { useRouter } from 'next/navigation';
 import RejectionCard from './RejectionCard';
 import StatusCard from './StatusCard';
@@ -12,6 +12,7 @@ import ActionCard from './ActionCard';
 import axios from 'axios';
 import PricingModel from './PricingModel';
 import { IVehicle } from '@/models/vehicle.model';
+import { getSocket } from '@/lib/socket';
 
 type Step = {
     id: number;
@@ -87,6 +88,38 @@ const PartnerDashboard = () => {
         return () => window.removeEventListener("focus", handleFocus)
     }, [])
 
+    const currentStep = Math.min(Math.max(0, activeStep), TOTAL_STEPS - 1)
+    const effectiveStep = vehicleData?.status === "approved" ? TOTAL_STEPS - 1 : currentStep
+    const progressPercentage = (effectiveStep / (TOTAL_STEPS - 1)) * 100;
+
+    useEffect(() => {
+        if (effectiveStep >= 7 && userData) {
+            const socket = getSocket();
+            socket.emit('join', { userId: (userData as any)._id || userData.email, role: 'partner' });
+
+            const watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const { latitude: lat, longitude: lng } = pos.coords;
+                    socket.emit('update-location', {
+                        userId: (userData as any)._id || userData.email,
+                        lat,
+                        lng,
+                        vehicleType: vehicleData?.type
+                    });
+
+                    // Also update DB
+                    axios.post('/api/user/location/update', { lat, lng }).catch(err => console.log(err));
+                },
+                (err) => console.error("Geolocation error:", err),
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+
+            return () => {
+                navigator.geolocation.clearWatch(watchId);
+            };
+        }
+    }, [effectiveStep, userData, vehicleData]);
+
     const handleStepClick = (step: Step, locked: boolean) => {
         if (step.id === 6 && userData?.videoKycStatus === "approved") {
             setShowPricing(true)
@@ -97,9 +130,6 @@ const PartnerDashboard = () => {
         }
     };
 
-    const currentStep = Math.min(Math.max(0, activeStep), TOTAL_STEPS - 1)
-    const effectiveStep = vehicleData?.status === "approved" ? TOTAL_STEPS - 1 : currentStep
-    const progressPercentage = (effectiveStep / (TOTAL_STEPS - 1)) * 100;
     return (
         <div className='min-h-screen bg-linear-to-br from-gray-100 to-gray-200 px-4 pt-28 pb-20'>
             <div className='max-w-7xl mx-auto space-y-12'>
@@ -269,6 +299,15 @@ const PartnerDashboard = () => {
                                 <h3 className='text-lg font-bold text-green-900'>You are Live!</h3>
                                 <p className='text-green-700 text-sm'>Your vehicle is now active on the URYDER platform and ready to accept bookings.</p>
                             </div>
+                            <div className='ml-auto'>
+                                <button
+                                    onClick={() => router.push('/partner/requests')}
+                                    className='px-6 py-3 bg-black text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-neutral-800 transition-all shadow-lg'
+                                >
+                                    <Bell size={18} />
+                                    View Requests
+                                </button>
+                            </div>
                         </div>
 
                         <div className='grid lg:grid-cols-2 gap-8'>
@@ -320,7 +359,7 @@ const PartnerDashboard = () => {
                                     </div>
                                 </div>
 
-                                <button 
+                                <button
                                     className='w-full py-5 rounded-[24px] bg-black text-white font-bold hover:bg-neutral-800 transition-all shadow-xl shadow-black/10'
                                     onClick={() => setShowPricing(true)}
                                 >

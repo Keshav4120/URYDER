@@ -5,7 +5,7 @@ import User from "@/models/user.model"
 import Vehicle from "@/models/vehicle.model"
 import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
 
         const session = await auth()

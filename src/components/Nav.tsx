@@ -9,8 +9,7 @@ import AuthModel from "./AuthModel";
 import { auth } from "@/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { div } from "motion/react-client";
-import { Bike, Car, ChevronRight, LogOut, Menu, Truck, X } from "lucide-react";
+import { Bike, Car, ChevronRight, LogOut, Menu, Navigation, Truck, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { setUserData } from "@/redux/userSlice";
 const Nav_Items = ["Home", "Booking", "About Us", "Contact"]
@@ -44,7 +43,7 @@ function Nav() {
                             if (i == "Home") {
                                 href = `/`
                             } else {
-                                href = `/${i.toLowerCase()}`
+                                href = `/${i.toLowerCase().replace(" ", "-")}`
                             }
                             const active = href == pathName
                             return <Link key={index} href={href} className={`text-sm font-medium transition
@@ -88,6 +87,15 @@ function Nav() {
                                                         </div>
                                                         )
                                                     }
+                                                    {userData.role === "partner" && (
+                                                        <div className="w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl cursor-pointer" onClick={() => router.push("/partner/requests")}>
+                                                            <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center">
+                                                                <Navigation size={14} />
+                                                            </div>
+                                                            <span className="flex-1 text-left">Booking Requests</span>
+                                                            <ChevronRight size={16} />
+                                                        </div>
+                                                    )}
                                                     <button className="w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl mt-2" onClick={handleLogout}>
                                                         <LogOut size={16} />
                                                         <span className="flex-1 text-left">Logout</span>
@@ -146,7 +154,7 @@ function Nav() {
                                     if (i == "Home") {
                                         href = `/`
                                     } else {
-                                        href = `/${i.toLowerCase()}`
+                                        href = `/${i.toLowerCase().replace(" ", "-")}`
                                     }
                                     const active = href == pathName
                                     return <Link key={index} href={href} className="px-6 py-4 text-gray-300">{i}</Link>

@@ -16,6 +16,10 @@ export interface IUser extends Document {
     videoKycStatus: VideoKycStatus,
     videoKycRoomId?: string,
     videoKycRejectionReason?: string,
+    currentLocation?: {
+        type: string,
+        coordinates: [number, number]
+    },
     createdAt: Date;
     updatedAt: Date;
 }
@@ -75,9 +79,22 @@ const userSchema = new mongoose.Schema<IUser>({
     },
     otpExpires: {
         type: Date
+    },
+    currentLocation: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number],
+            default: [0, 0]
+        }
     }
 
 }, { timestamps: true })
+
+userSchema.index({ currentLocation: "2dsphere" });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema)
 export default User
