@@ -49,6 +49,7 @@ function ContentList({ data, type }: any) {
                 const email = item.email || item.owner?.email || "—"
                 return (
                     <motion.div
+                        key={item._id ?? index}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
@@ -67,15 +68,23 @@ function ContentList({ data, type }: any) {
                         <div className='shrink-0'>
                             {type === "rejected" ? (
                                 <div className='flex flex-col items-end gap-2'>
-                                    <span className='text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700'>
-                                        Re-KYC Requested
+                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${item.status === "Vehicle Rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>
+                                        {item.status}
                                     </span>
                                     <motion.button
                                         whileTap={{ scale: 0.96 }}
                                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white text-sm font-semibold transition-colors"
-                                        onClick={() => handleStartVideoKyc(item._id)}
+                                        onClick={() => {
+                                            if (item.isVehicle) {
+                                                router.push(`/admin/reviews/vehicle/${item._id}`)
+                                            } else if (item.status === "KYC Rejected") {
+                                                handleStartVideoKyc(item._id)
+                                            } else {
+                                                router.push(`/admin/reviews/partner/${item._id}`)
+                                            }
+                                        }}
                                     >
-                                        Start Re-KYC
+                                        {item.status === "KYC Rejected" ? "Start Re-KYC" : "Review"}
                                         <ArrowRight size={15} />
                                     </motion.button>
                                 </div>
@@ -100,16 +109,29 @@ function ContentList({ data, type }: any) {
                                     <ArrowRight size={15} />
                                 </motion.button>
                             ) : (
-                                <motion.button
-                                    whileTap={{ scale: 0.96 }}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white text-sm font-semibold transition-colors"
-                                    onClick={() => {
-                                        type == "partner" ? router.push(`/admin/reviews/partner/${item._id}`) : router.push(`/admin/reviews/vehicle/${item._id}`)
-                                    }}
-                                >
-                                    Review
-                                    <ArrowRight size={15} />
-                                </motion.button>
+                                <div className='flex flex-col items-end gap-2'>
+                                    {item.status === "rejected" && (
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600 uppercase tracking-tighter">
+                                            Rejected
+                                        </span>
+                                    )}
+                                    <motion.button
+                                        whileTap={{ scale: 0.96 }}
+                                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white text-sm font-semibold transition-colors"
+                                        onClick={() => {
+                                            if (type === "partner") {
+                                                router.push(`/admin/reviews/partner/${item._id}`)
+                                            } else if (type === "rejected") {
+                                                item.isVehicle ? router.push(`/admin/reviews/vehicle/${item._id}`) : router.push(`/admin/reviews/partner/${item._id}`)
+                                            } else {
+                                                router.push(`/admin/reviews/vehicle/${item._id}`)
+                                            }
+                                        }}
+                                    >
+                                        Review
+                                        <ArrowRight size={15} />
+                                    </motion.button>
+                                </div>
                             )}
                         </div>
 

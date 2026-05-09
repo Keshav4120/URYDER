@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
         }
 
         const updatePayload: any = {
-            status: "pending"
+            status: "pending",
+            rejectionReason: undefined
         }
 
         if (aadhar) {
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
             user.partnerOnboardingStep = 3
         }
         user.partnerStatus = "pending"
+        user.rejectionReason = undefined
         await user.save()
         return Response.json(partnerDocs, { status: 200 })
     } catch (error: any) {

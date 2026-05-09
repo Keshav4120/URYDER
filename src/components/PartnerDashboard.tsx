@@ -1,7 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { RootState } from '@/redux/store';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setUserData } from '@/redux/userSlice';
 import { motion } from 'motion/react'
 import { Check, CheckCheck, Clock, Clock1, Lock, Video } from 'lucide-react'
 import { useRouter } from 'next/navigation';
@@ -31,6 +32,7 @@ const STEPS: Step[] = [
 const TOTAL_STEPS = STEPS.length;
 const PartnerDashboard = () => {
     const router = useRouter();
+    const dispatch = useDispatch()
     const [activeStep, setActiveStep] = useState(0);
     const { userData } = useSelector((state: RootState) => state.user)
     const [showPricing, setShowPricing] = useState(false)
@@ -47,10 +49,42 @@ const PartnerDashboard = () => {
             setVehicleData(data.vehicle)
         } catch (error: any) {
             console.log(error)
+            setVehicleData(null)
         }
     }
+
+    const refreshPartnerData = async () => {
+        try {
+            const [{ data: user }, { data: pricing }] = await Promise.all([
+                axios.get("/api/user/me"),
+                axios.get("/api/partner/onboarding/pricing")
+            ])
+            dispatch(setUserData(user))
+            setVehicleData(pricing.vehicle)
+        } catch (error: any) {
+            console.log("Partner dashboard refresh error:", error)
+            await handleGetPricing()
+        }
+    }
+
     useEffect(() => {
-        handleGetPricing()
+        refreshPartnerData()
+    }, [])
+
+    useEffect(() => {
+        const interval = window.setInterval(() => {
+            refreshPartnerData()
+        }, 10000)
+
+        return () => window.clearInterval(interval)
+    }, [])
+
+    useEffect(() => {
+        const handleFocus = () => {
+            refreshPartnerData()
+        }
+        window.addEventListener("focus", handleFocus)
+        return () => window.removeEventListener("focus", handleFocus)
     }, [])
 
     const handleStepClick = (step: Step, locked: boolean) => {
@@ -63,7 +97,9 @@ const PartnerDashboard = () => {
         }
     };
 
-    const progressPercentage = (Math.max(0, activeStep) / (TOTAL_STEPS - 1)) * 100;
+    const currentStep = Math.min(Math.max(0, activeStep), TOTAL_STEPS - 1)
+    const effectiveStep = vehicleData?.status === "approved" ? TOTAL_STEPS - 1 : currentStep
+    const progressPercentage = (effectiveStep / (TOTAL_STEPS - 1)) * 100;
     return (
         <div className='min-h-screen bg-linear-to-br from-gray-100 to-gray-200 px-4 pt-28 pb-20'>
             <div className='max-w-7xl mx-auto space-y-12'>
@@ -88,9 +124,9 @@ const PartnerDashboard = () => {
 
                         <div className='relative flex justify-between'>
                             {STEPS.map((s, index) => {
-                                const completed = index < activeStep;
-                                const active = index === activeStep;
-                                const locked = index > activeStep;
+                                const completed = index < effectiveStep;
+                                const active = index === effectiveStep;
+                                const locked = index > effectiveStep;
                                 return (
                                     <motion.div
                                         key={s.id}
@@ -210,6 +246,89 @@ const PartnerDashboard = () => {
                             setShowPricing(true)
                         }}
                     />
+                )}
+                {activeStep == 6 && vehicleData?.status === "approved" && vehicleData?.isActive !== true && (
+                    <StatusCard
+                        icon={<CheckCheck size={18} />}
+                        title={'All Checks Completed'}
+                        desc={"Your application is in final review. We will notify you once it's live."}
+                    />
+                )}
+
+                {effectiveStep >= 7 && vehicleData && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className='space-y-8'
+                    >
+                        <div className='bg-green-50 border border-green-100 rounded-2xl p-6 flex items-center gap-4 shadow-sm'>
+                            <div className='w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white shadow-lg shadow-green-200'>
+                                <CheckCheck size={24} />
+                            </div>
+                            <div>
+                                <h3 className='text-lg font-bold text-green-900'>You are Live!</h3>
+                                <p className='text-green-700 text-sm'>Your vehicle is now active on the URYDER platform and ready to accept bookings.</p>
+                            </div>
+                        </div>
+
+                        <div className='grid lg:grid-cols-2 gap-8'>
+                            <div className='bg-white rounded-[32px] overflow-hidden shadow-xl border border-gray-100'>
+                                <div className='aspect-video relative'>
+                                    {vehicleData.imageUrl ? (
+                                        <img src={vehicleData.imageUrl} alt={vehicleData.vechicleModel} className='w-full h-full object-cover' />
+                                    ) : (
+                                        <div className='w-full h-full bg-gray-100 flex items-center justify-center text-gray-400'>No Image</div>
+                                    )}
+                                    <div className='absolute top-4 left-4'>
+                                        <span className='px-4 py-2 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm'>
+                                            {vehicleData.type}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className='p-8 space-y-4'>
+                                    <div className='flex justify-between items-end'>
+                                        <div>
+                                            <p className='text-xs font-bold text-gray-400 uppercase tracking-widest'>Active Vehicle</p>
+                                            <h2 className='text-2xl font-bold text-gray-900'>{vehicleData.vechicleModel}</h2>
+                                        </div>
+                                        <div className='px-4 py-2 bg-blue-50 text-blue-700 rounded-xl font-bold tracking-wider text-sm'>
+                                            {vehicleData.number}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className='space-y-6'>
+                                <div className='bg-white rounded-[32px] p-8 shadow-xl border border-gray-100'>
+                                    <h3 className='text-lg font-bold mb-6 flex items-center gap-2'>
+                                        <CheckCheck size={18} className='text-green-500' />
+                                        Pricing Configuration
+                                    </h3>
+                                    <div className='space-y-4'>
+                                        <div className='flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100'>
+                                            <span className='text-gray-500 font-medium'>Base Fare</span>
+                                            <span className='font-bold text-lg'>₹{vehicleData.baseFare}</span>
+                                        </div>
+                                        <div className='flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100'>
+                                            <span className='text-gray-500 font-medium'>Price Per KM</span>
+                                            <span className='font-bold text-lg'>₹{vehicleData.pricePerKm}</span>
+                                        </div>
+                                        <div className='flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100'>
+                                            <span className='text-gray-500 font-medium'>Waiting Charge</span>
+                                            <span className='font-bold text-lg'>₹{vehicleData.waitingCharge}<span className='text-xs font-normal text-gray-400 ml-1'>/min</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    className='w-full py-5 rounded-[24px] bg-black text-white font-bold hover:bg-neutral-800 transition-all shadow-xl shadow-black/10'
+                                    onClick={() => setShowPricing(true)}
+                                >
+                                    Update Pricing or Info
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
                 )}
             </div>
 

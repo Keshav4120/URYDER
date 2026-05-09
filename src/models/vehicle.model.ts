@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-type vechicleType =
+export type vechicleType =
     "bike" |
     "car" |
     "loading" |

@@ -46,6 +46,7 @@ export async function POST(req: Request) {
             vehicle.number = formattedNumber;
             vehicle.vechicleModel = model;
             vehicle.status = "pending";
+            vehicle.rejectionReason = undefined;
             await vehicle.save();
             if (user.partnerOnboardingStep < 2) {
                 user.partnerOnboardingStep = 2;
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
                 user.partnerOnboardingStep = 3
             }
             user.partnerStatus = "pending"
+            user.rejectionReason = undefined
             await user.save()
             return Response.json(vehicle, { status: 200 })
         }

@@ -13,7 +13,7 @@ type Stats = {
     totalApprovedPartner: number
     totalPartner: number
     totalPendingPartner: number
-    totalRejectedPartner: number
+    totalRejected: number
 }
 type Tab = "kyc" | "partner" | "vehicle" | "rejected"
 
@@ -82,7 +82,7 @@ function AdminDashboard() {
                     <KPI label='Total Partners' value={stats?.totalPartner || 0} icon={<Users size={20} />} variant={"totalPartners"} />
                     <KPI label='Approved Partners' value={stats?.totalApprovedPartner || 0} icon={<CheckCircle2 size={20} />} variant={"approved"} />
                     <KPI label='Pending Partners' value={stats?.totalPendingPartner || 0} icon={<Clock size={20} />} variant={"pending"} />
-                    <KPI label='Rejected Partners' value={stats?.totalRejectedPartner || 0} icon={<XCircle size={20} />} variant={"rejected"} />
+                    <KPI label='Total Rejected' value={stats?.totalRejected || 0} icon={<XCircle size={20} />} variant={"rejected"} />
 
                 </div>
 

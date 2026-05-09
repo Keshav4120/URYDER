@@ -16,9 +16,12 @@ export async function GET(req: NextRequest) {
         const totalApprovedPartner = await User.countDocuments({ role: "partner", partnerStatus: "approved" })
         const totalPendingPartner = await User.countDocuments({ role: "partner", partnerStatus: "pending" })
         const totalRejectedPartner = await User.countDocuments({ role: "partner", partnerStatus: "rejected" })
+        const totalRejectedVehicle = await Vehicle.countDocuments({ status: "rejected" })
+        const totalRejected = totalRejectedPartner + totalRejectedVehicle
 
         const pendingPartnerUsers = await User.find({
-            role: "partner", partnerStatus: "pending",
+            role: "partner",
+            partnerStatus: { $in: ["pending", "rejected"] },
             partnerOnboardingStep: { $gte: 3 }
         })
 
@@ -36,17 +39,19 @@ export async function GET(req: NextRequest) {
         const pricingPartnerIds = pricingPartners.map(p => p._id)
 
         const pendingVehicle = await Vehicle.find({
-            status: "pending",
+            status: { $in: ["pending", "rejected"] },
             owner: { $in: pricingPartnerIds }
         }).populate("owner")
+
         const vehicleTypeMap = new Map(
-            partnerVehicles.map(vehicle => [String(vehicle.id), vehicle.vehicleType])
+            partnerVehicles.map(vehicle => [String(vehicle.owner), vehicle.type])
         )
 
         const pendingPartnerReviews = pendingPartnerUsers.map((p) => ({
             _id: p._id,
             name: p.name,
             email: p.email,
+            status: p.partnerStatus,
             vehicleType: vehicleTypeMap.get(String(p._id))
         }
         ))
@@ -54,7 +59,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({
             pendingVehicle,
             stats: {
-                totalPartner, totalApprovedPartner, totalPendingPartner, totalRejectedPartner
+                totalPartner,
+                totalApprovedPartner,
+                totalPendingPartner,
+                totalRejected: totalRejected
             },
             pendingPartnerReviews
         }, { status: 200 })

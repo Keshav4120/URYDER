@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import connectDb from "@/lib/db";
 import User from "@/models/user.model";
+import Vehicle from "@/models/vehicle.model";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
 
         const rejectedPartners = await User.find({
             role: "partner",
-            videoKycStatus: "re_requested"
+            videoKycStatus: "rejected"
         }).select("name email videoKycStatus videoKycRoomId videoKycRejectionReason")
 
         return NextResponse.json(rejectedPartners, { status: 200 })
